@@ -18,7 +18,6 @@ namespace FIDB {
 	};
 
 	class Database {
-		std::fstream backing;
 		private:
 			Item _ReadBlock(char* blockpos);
 			_IndexArr* _ReadIndex(char* indexpos);
