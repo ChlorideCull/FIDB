@@ -7,4 +7,16 @@ namespace FIDB {
 	Database::~Database() {
 		backing.close();
 	}
+	
+	Item Database::_ReadBlock(char* blockpos) {
+	}
+	
+	_IndexArr* Database::_ReadIndex(char* indexpos) {
+	}
+	
+	Item* Database::operator[] (const unsigned long id) {
+	}
+
+	unsigned long Database::AddItem(Item* item) {
+	}
 }
