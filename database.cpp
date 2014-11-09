@@ -46,18 +46,29 @@ namespace FIDB {
 
 	Item Database::_ReadBlock(unsigned long blockpos, unsigned long jmpfrom) {
 		_GetLock(blockpos, true);
-		unsigned long blkhdrs[3];
-		backing.read((char*)&blkhdrs, sizeof(unsigned long)*3);
+		unsigned long blkhdrs[4];
+		backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
 		
 		if (blkhdrs[1] != blkhdrs[2] && blkhdrs[0] == 0 && jmpfrom == NULL)
 			std::cerr << "Corrupt header in block @ " << blockpos << " (sizes differ, but no JMP)" << std::endl;
 		
 		char content[blkhdrs[2]];
+		unsigned long contentlen = blkhdrs[1];
+		backing.read(content, contentlen);
+
 		if (blkhdrs[0] != 0) {
 			Item tomerge = _ReadBlock(blkhdrs[0], blockpos);
-			//for each item in tomerge.content, add to content array, after all that construct item and return
+			for (unsigned long i; i < tomerge.itemsize; i++) {
+				content[contentlen] = tomerge.item[i];
+				contentlen++;
+			}
 		}
+
 		_ReleaseLock(blockpos, true);
+		Item toret;
+		toret.itemsize = contentlen;
+		toret.item = content;
+		return toret;
 	}
 	
 	_IndexArr* Database::_ReadIndex(char* indexpos) {
