@@ -4,6 +4,13 @@
 #include <iostream>
 #include <fstream>
 
+//Allocate blocks at multiples of this size to limit fragmentation.
+//(otherwise most changes to blocks would generate single byte or very small blocks)
+#define OVERALLOC_SIZE 512
+
+//Version, do not change without written consent from lead developer.
+#define FIDBVER 3
+
 namespace FIDB {
 	std::fstream backing;
 
