@@ -70,7 +70,10 @@ namespace FIDB {
 		toret.item = content;
 		return toret;
 	}
-	
+
+	unsigned long _WriteBlock(Item towrite, unsigned long blockpos) {
+	}
+
 	_IndexArr* Database::_ReadIndex(char* indexpos) {
 	}
 	

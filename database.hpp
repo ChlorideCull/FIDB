@@ -17,6 +17,7 @@ namespace FIDB {
 	class Database {
 		private:
 			Item _ReadBlock(unsigned long, unsigned long);
+			unsigned long _WriteBlock(Item, unsigned long);
 			_IndexArr* _ReadIndex(char*);
 			void _GetLock(unsigned long, bool);
 			void _ReleaseLock(unsigned long, bool);
