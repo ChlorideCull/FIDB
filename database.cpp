@@ -74,6 +74,14 @@ namespace FIDB {
 	}
 
 	unsigned long _WriteBlock(Item towrite, unsigned long blockpos) {
+		_GetLock(blockpos, true);
+		unsigned long blkhdrs[4];
+		backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
+		if (towrite.itemsize + 1 + (sizeof(unsigned long)*4) <= blkhdrs[3]) {
+			//Enough space in block, write to it
+		} else {
+			//Have to continue to a new block, allocate or reuse
+		}
 	}
 
 	_IndexArr* Database::_ReadIndex(char* indexpos) {
