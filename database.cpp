@@ -28,6 +28,8 @@ namespace FIDB {
 		while (blocklock == 1)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(50)); //Thanks StackOverflow!
+			backing.seekg(blockpos);
+			backing.read(&blocklock, 1);
 		}
 		if (!readonly) {
 			blocklock = 1;
