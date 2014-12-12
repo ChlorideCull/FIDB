@@ -33,7 +33,7 @@ namespace FIDB {
 		}
 		if (!readonly) {
 			blocklock = 1;
-			backing.seekg(blockpos);
+			backing.seekp(blockpos);
 			backing.write(&blocklock, 1);
 		}
 	}
@@ -41,7 +41,7 @@ namespace FIDB {
 	void Database::_ReleaseLock(unsigned long blockpos, bool readonly) {
 		if (!readonly) {
 			char blocklock = 0;
-			backing.seekg(blockpos);
+			backing.seekp(blockpos);
 			backing.write(&blocklock, 1);
 		}
 	}
@@ -73,14 +73,28 @@ namespace FIDB {
 		return toret;
 	}
 
-	unsigned long _WriteBlock(Item towrite, unsigned long blockpos) {
-		_GetLock(blockpos, true);
+	void _WriteBlock(Item towrite, unsigned long blockpos) {
+		backing.seekg(blockpos);
+		backing.seekp(blockpos);
+		bool newblk;
 		unsigned long blkhdrs[4];
-		backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
-		if (towrite.itemsize + 1 + (sizeof(unsigned long)*4) <= blkhdrs[3]) {
-			//Enough space in block, write to it
+		if (backing.eof()) {
+			blkhdrs[0] = 0;
+			blkhdrs[1] = towrite.itemsize;
+			blkhdrs[2] = towrite.itemsize;
+			blkhdrs[3] = towrite.itemsize + (sizeof(unsigned long)*4) + 1;
+			backing.write(0, 1);
+			backing.write(&blkhdrs, sizeof(unsigned long)*4);
+			backing.write(towrite.item, towrite.itemsize);
+			backing.flush();
 		} else {
-			//Have to continue to a new block, allocate or reuse
+			_GetLock(blockpos, true);
+			backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
+			if (towrite.itemsize + 1 + (sizeof(unsigned long)*4) <= blkhdrs[3]) {
+				//Block large enough or non-existant block
+			} else {
+				//Have to continue to a new block, allocate or reuse
+			}
 		}
 	}
 
