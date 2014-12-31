@@ -102,9 +102,27 @@ namespace FIDB {
 			_GetLock(blockpos, true);
 			backing.read((char*)blkhdrs, sizeof(uint64_t)*4);
 			if (towrite.itemsize + 1 + (sizeof(uint64_t)*4) <= blkhdrs[3]) {
-				//Block large enough or non-existant block
+				//Block large enough or non-existent block
+				backing.write(0, 1);
+				blkhdrs[0] = 0;
+				blkhdrs[1] = towrite.itemsize;
+				blkhdrs[2] = towrite.itemsize;
+				//Keep blkhdrs[3]
+				backing.write((char*)&blkhdrs, sizeof(uint64_t)*4);
+				backing.write(towrite.item, towrite.itemsize);
+				backing.flush();
+				_ReleaseLock(blockpos, true);
 			} else {
 				//Have to continue to a new block, allocate or reuse
+				blkhdrs[0] = 0; //Find a new block position? How?
+				//Keep blkhdrs[1]
+				blkhdrs[2] = towrite.itemsize;
+				//Keep blkhdrs[3]
+				backing.write(0, 1);
+				backing.write((char*)&blkhdrs, sizeof(uint64_t)*4);
+				backing.write(towrite.item, towrite.itemsize);
+				backing.flush();
+				_ReleaseLock(blockpos, true);
 			}
 		}
 	}

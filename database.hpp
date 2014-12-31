@@ -9,6 +9,8 @@ namespace FIDB {
 
 	struct Index {
 		uint64_t id;
+		uint32_t namelen;
+		char* name;
 		uint64_t blockoffset;
 	};
 
