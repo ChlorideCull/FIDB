@@ -173,11 +173,37 @@ namespace FIDB {
 	}
 	
 	Item* Database::operator[] (const uint64_t id) {
+		Item target = _ReadBlock(indexstore.Indexes[id].blockoffset, 0);
+		Item *output = (Item *) malloc(sizeof(Item));
+		*output = target;
+		return output;
 	}
 
 	Item* Database::operator[] (const char* id) {
+		for (uint64_t i = 0; i < indexstore.Indexes.size(); ++i) {
+			if (strcmp(indexstore.Indexes[i].name, id)) {
+				Item target = _ReadBlock(indexstore.Indexes[i].blockoffset, 0);
+				Item *output = (Item *) malloc(sizeof(Item));
+				*output = target;
+				return output;
+			}
+			throw Exceptions::ITEM_NOT_FOUND;
+		}
 	}
 
-	uint64_t Database::AddItem(Item* item) {
+	uint64_t Database::AddItem(const Item item) {
+		Index toadd;
+		Item topmostblock = _ReadBlock(indexstore.HighestID, 0);
+		uint64_t blockpos = indexstore.Indexes[indexstore.HighestID].blockoffset+topmostblock.itemsize;
+		_WriteBlock(item, blockpos);
+
+		toadd.blockoffset = blockpos;
+		toadd.id = indexstore.HighestID+1;
+		toadd.name = (char*)malloc(strlen(item.name));
+		strcpy(toadd.name, item.name);
+
+		indexstore.Indexes.insert(indexstore.Indexes.end(), toadd);
+		indexstore.HighestID++;
+		return toadd.id;
 	}
 }

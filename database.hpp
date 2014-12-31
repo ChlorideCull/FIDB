@@ -19,6 +19,11 @@ namespace FIDB {
 		uint64_t HighestID;
 	};
 
+	enum Exceptions {
+		ITEM_NOT_FOUND,
+		UNKNOWN
+	};
+
 	class Database {
 		private:
 			Item _ReadBlock(uint64_t , uint64_t);
@@ -31,6 +36,6 @@ namespace FIDB {
 			~Database();
 			Item* operator[] (const uint64_t id);
 			Item* operator[] (const char*);
-			uint64_t AddItem(Item* item);
+			uint64_t AddItem(const Item item);
 	};
 }
