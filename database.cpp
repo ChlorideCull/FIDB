@@ -9,13 +9,24 @@
 #define OVERALLOC_SIZE 512
 
 //Version, do not change without written consent from lead developer.
-#define FIDBVER 3
+#define FIDBVER '3'
 
 namespace FIDB {
 	std::fstream backing;
 
 	Database::Database(char* file) {
 		backing.open(file, std::ios::in|std::ios::out|std::ios::binary);
+		if (backing.eof()) {
+			char ver = FIDBVER;
+			backing.write(&ver, 1);
+		} else {
+			char usedver = '\0';
+			backing.read(&usedver, 1);
+			if (usedver != FIDBVER) {
+				std::cerr << "Version " << usedver << " in file differs from " << FIDBVER << " in library!" << std::endl;
+				return;
+			}
+		}
 	}
 	Database::~Database() {
 		backing.close();
