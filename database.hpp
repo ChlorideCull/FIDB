@@ -3,13 +3,13 @@
 
 namespace FIDB {
 	struct Item {
+		char* name;
 		uint64_t itemsize;
 		char* item;
 	};
 
 	struct Index {
 		uint64_t id;
-		uint32_t namelen;
 		char* name;
 		uint64_t blockoffset;
 	};

@@ -14,6 +14,7 @@
 
 namespace FIDB {
 	std::fstream backing;
+	IndexBlock indexstore;
 
 	Database::Database(char* file) {
 		backing.open(file, std::ios::in|std::ios::out|std::ios::binary);
@@ -28,6 +29,7 @@ namespace FIDB {
 				return;
 			}
 		}
+		indexstore = _ReadIndex(1); //Index is always on second byte
 	}
 	Database::~Database() {
 		backing.close();
@@ -114,24 +116,36 @@ namespace FIDB {
 				_ReleaseLock(blockpos, true);
 			} else {
 				//Have to continue to a new block, allocate or reuse
-				blkhdrs[0] = 0; //Find a new block position? How?
+				std::streampos currentpos = backing.tellp();
+				backing.seekp(0, std::ios::end);
+				std::streampos endpos = backing.tellp();
+				backing.seekp(currentpos, std::ios::beg);
+				blkhdrs[0] = (uint64_t) endpos;
+
 				//Keep blkhdrs[1]
 				blkhdrs[2] = towrite.itemsize;
 				//Keep blkhdrs[3]
+
+				uint64_t blockcancontain = blkhdrs[3] - ((sizeof(uint64_t)*4) + 1);
 				backing.write(0, 1);
 				backing.write((char*)&blkhdrs, sizeof(uint64_t)*4);
-				backing.write(towrite.item, towrite.itemsize);
+				backing.write(towrite.item, blockcancontain);
 				backing.flush();
 				_ReleaseLock(blockpos, true);
+
+				//Continue to next block!
+				Item process;
+				process.itemsize = towrite.itemsize-blockcancontain;
+				process.item = towrite.item+blockcancontain;
+				_WriteBlock(process, blockpos);
 			}
 		}
 	}
 
 	IndexBlock Database::_ReadIndex(const uint64_t indexpos) {
 		Item indexblockraw = _ReadBlock(indexpos, 0);
-		uint64_t* ptrthing = (uint64_t*)indexblockraw.item;
 		IndexBlock output;
-		output.HighestID = ptrthing[0];
+		output.HighestID = *((uint64_t*)indexblockraw.item);
 		/*
 			ulong - highest used row ID
  			ulong - row ID
@@ -145,11 +159,11 @@ namespace FIDB {
 			Index toinput;
 			toinput.id = *((uint64_t*)indexblockraw.item+codepos);
 			codepos += sizeof(toinput.id);
-			toinput.namelen = *((uint32_t*)indexblockraw.item+codepos);
-			codepos += sizeof(toinput.namelen);
-			toinput.name = (char*)malloc(toinput.namelen);
+			uint32_t namelen = *((uint32_t*)indexblockraw.item+codepos);
+			codepos += sizeof(namelen);
+			toinput.name = (char*)malloc(namelen);
 			strcpy(toinput.name, indexblockraw.item+codepos);
-			codepos += toinput.namelen;
+			codepos += namelen;
 			toinput.blockoffset = *((uint64_t*)indexblockraw.item+codepos);
 			codepos += sizeof(toinput.blockoffset);
 			output.Indexes.insert(output.Indexes.end(), toinput);
