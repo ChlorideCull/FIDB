@@ -1,2 +1,4 @@
+# CLion IDE
+.idea/
 *.swp
 build/

@@ -21,7 +21,7 @@ namespace FIDB {
 		backing.close();
 	}
 	
-	void Database::_GetLock(unsigned long blockpos, bool readonly) {
+	void Database::_GetLock(uint64_t blockpos, bool readonly) {
 		char blocklock = 1;
 		backing.seekg(blockpos);
 		backing.read(&blocklock, 1);
@@ -38,7 +38,7 @@ namespace FIDB {
 		}
 	}
 
-	void Database::_ReleaseLock(unsigned long blockpos, bool readonly) {
+	void Database::_ReleaseLock(uint64_t blockpos, bool readonly) {
 		if (!readonly) {
 			char blocklock = 0;
 			backing.seekp(blockpos);
@@ -46,21 +46,21 @@ namespace FIDB {
 		}
 	}
 
-	Item Database::_ReadBlock(unsigned long blockpos, unsigned long jmpfrom) {
+	Item Database::_ReadBlock(uint64_t blockpos, uint64_t jmpfrom) {
 		_GetLock(blockpos, true);
-		unsigned long blkhdrs[4];
-		backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
+		uint64_t blkhdrs[4];
+		backing.read((char*)blkhdrs, sizeof(uint64_t)*4);
 		
 		if (blkhdrs[1] != blkhdrs[2] && blkhdrs[0] == 0 && jmpfrom == NULL)
 			std::cerr << "Corrupt header in block @ " << blockpos << " (sizes differ, but no JMP)" << std::endl;
 		
 		char content[blkhdrs[2]];
-		unsigned long contentlen = blkhdrs[1];
+		uint64_t contentlen = blkhdrs[1];
 		backing.read(content, contentlen);
 
 		if (blkhdrs[0] != 0) {
 			Item tomerge = _ReadBlock(blkhdrs[0], blockpos);
-			for (unsigned long i; i < tomerge.itemsize; i++) {
+			for (uint64_t i; i < tomerge.itemsize; i++) {
 				content[contentlen] = tomerge.item[i];
 				contentlen++;
 			}
@@ -73,24 +73,24 @@ namespace FIDB {
 		return toret;
 	}
 
-	void _WriteBlock(Item towrite, unsigned long blockpos) {
+	void Database::_WriteBlock(Item towrite, uint64_t blockpos) {
 		backing.seekg(blockpos);
 		backing.seekp(blockpos);
 		bool newblk;
-		unsigned long blkhdrs[4];
+		uint64_t blkhdrs[4];
 		if (backing.eof()) {
 			blkhdrs[0] = 0;
 			blkhdrs[1] = towrite.itemsize;
 			blkhdrs[2] = towrite.itemsize;
-			blkhdrs[3] = towrite.itemsize + (sizeof(unsigned long)*4) + 1;
+			blkhdrs[3] = towrite.itemsize + (sizeof(uint64_t)*4) + 1;
 			backing.write(0, 1);
-			backing.write(&blkhdrs, sizeof(unsigned long)*4);
+			backing.write((char*)&blkhdrs, sizeof(uint64_t)*4);
 			backing.write(towrite.item, towrite.itemsize);
 			backing.flush();
 		} else {
 			_GetLock(blockpos, true);
-			backing.read((char*)blkhdrs, sizeof(unsigned long)*4);
-			if (towrite.itemsize + 1 + (sizeof(unsigned long)*4) <= blkhdrs[3]) {
+			backing.read((char*)blkhdrs, sizeof(uint64_t)*4);
+			if (towrite.itemsize + 1 + (sizeof(uint64_t)*4) <= blkhdrs[3]) {
 				//Block large enough or non-existant block
 			} else {
 				//Have to continue to a new block, allocate or reuse
@@ -101,9 +101,9 @@ namespace FIDB {
 	_IndexArr* Database::_ReadIndex(char* indexpos) {
 	}
 	
-	Item* Database::operator[] (const unsigned long id) {
+	Item* Database::operator[] (const uint64_t id) {
 	}
 
-	unsigned long Database::AddItem(Item* item) {
+	uint64_t Database::AddItem(Item* item) {
 	}
 }

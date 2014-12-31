@@ -1,30 +1,32 @@
+#include <cstdint>
+
 namespace FIDB {
 	struct Item {
-		unsigned long itemsize;
+		uint64_t itemsize;
 		char* item;
 	};
 
 	struct Index {
-		unsigned long id;
-		unsigned long blockoffset;
+		uint64_t id;
+		uint64_t blockoffset;
 	};
 
 	struct _IndexArr {
-		unsigned long count;
+		uint64_t count;
 		Index* indexitems;
 	};
 
 	class Database {
 		private:
-			Item _ReadBlock(unsigned long, unsigned long);
-			void _WriteBlock(Item, unsigned long);
+			Item _ReadBlock(uint64_t , uint64_t);
+			void _WriteBlock(Item, uint64_t);
 			_IndexArr* _ReadIndex(char*);
-			void _GetLock(unsigned long, bool);
-			void _ReleaseLock(unsigned long, bool);
+			void _GetLock(uint64_t, bool);
+			void _ReleaseLock(uint64_t, bool);
 		public:
 			Database(char*);
 			~Database();
-			Item* operator[] (const unsigned long id);
-			unsigned long AddItem(Item* item);
+			Item* operator[] (const uint64_t id);
+			uint64_t AddItem(Item* item);
 	};
 }
