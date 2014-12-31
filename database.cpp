@@ -3,6 +3,7 @@
 #include <thread>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 //Allocate blocks at multiples of this size to limit fragmentation.
 //(otherwise most changes to blocks would generate single byte or very small blocks)
@@ -127,7 +128,36 @@ namespace FIDB {
 		}
 	}
 
-	std::vector<Index> Database::_ReadIndex(const uint64_t indexpos) {
+	IndexBlock Database::_ReadIndex(const uint64_t indexpos) {
+		Item indexblockraw = _ReadBlock(indexpos, 0);
+		uint64_t* ptrthing = (uint64_t*)indexblockraw.item;
+		IndexBlock output;
+		output.HighestID = ptrthing[0];
+		/*
+			ulong - highest used row ID
+ 			ulong - row ID
+ 			uint - name length
+			cstr - name
+			ulong - byte location of block
+		 */
+		bool notdone = true;
+		uint64_t codepos = sizeof(uint64_t); //Because I'm lazy, and whenever a compiler fucks up the standard
+
+		while (indexblockraw.itemsize < codepos) {
+			Index toinput;
+			toinput.id = *((uint64_t*)indexblockraw.item+codepos);
+			codepos += sizeof(toinput.id);
+			toinput.namelen = *((uint32_t*)indexblockraw.item+codepos);
+			codepos += sizeof(toinput.namelen);
+			toinput.name = (char*)malloc(toinput.namelen);
+			strcpy(toinput.name, indexblockraw.item+codepos);
+			codepos += toinput.namelen;
+			toinput.blockoffset = *((uint64_t*)indexblockraw.item+codepos);
+			codepos += sizeof(toinput.blockoffset);
+			output.Indexes.insert(output.Indexes.end(), toinput);
+		}
+
+		return output;
 	}
 	
 	Item* Database::operator[] (const uint64_t id) {
