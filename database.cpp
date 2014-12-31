@@ -133,6 +133,9 @@ namespace FIDB {
 	Item* Database::operator[] (const uint64_t id) {
 	}
 
+	Item* Database::operator[] (const char* id) {
+	}
+
 	uint64_t Database::AddItem(Item* item) {
 	}
 }

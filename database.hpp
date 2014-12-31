@@ -25,6 +25,7 @@ namespace FIDB {
 			Database(char*);
 			~Database();
 			Item* operator[] (const uint64_t id);
+			Item* operator[] (const char*);
 			uint64_t AddItem(Item* item);
 	};
 }
