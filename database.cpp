@@ -109,7 +109,7 @@ namespace FIDB {
 		}
 	}
 
-	_IndexArr* Database::_ReadIndex(char* indexpos) {
+	std::vector<Index> Database::_ReadIndex(const uint64_t indexpos) {
 	}
 	
 	Item* Database::operator[] (const uint64_t id) {

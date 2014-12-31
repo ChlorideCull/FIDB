@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <vector>
 
 namespace FIDB {
 	struct Item {
@@ -11,16 +12,11 @@ namespace FIDB {
 		uint64_t blockoffset;
 	};
 
-	struct _IndexArr {
-		uint64_t count;
-		Index* indexitems;
-	};
-
 	class Database {
 		private:
 			Item _ReadBlock(uint64_t , uint64_t);
 			void _WriteBlock(Item, uint64_t);
-			_IndexArr* _ReadIndex(char*);
+			std::vector<Index> _ReadIndex(const uint64_t);
 			void _GetLock(uint64_t, bool);
 			void _ReleaseLock(uint64_t, bool);
 		public:
