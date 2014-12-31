@@ -62,7 +62,7 @@ namespace FIDB {
 		uint64_t blkhdrs[4];
 		backing.read((char*)blkhdrs, sizeof(uint64_t)*4);
 		
-		if (blkhdrs[1] != blkhdrs[2] && blkhdrs[0] == 0 && jmpfrom == NULL)
+		if (blkhdrs[1] != blkhdrs[2] && blkhdrs[0] == 0 && jmpfrom == 0)
 			std::cerr << "Corrupt header in block @ " << blockpos << " (sizes differ, but no JMP)" << std::endl;
 		
 		char content[blkhdrs[2]];
