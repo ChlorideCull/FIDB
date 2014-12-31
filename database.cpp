@@ -42,7 +42,7 @@ namespace FIDB {
 			backing.seekg(blockpos);
 			backing.read(&blocklock, 1);
 		}
-		if (!readonly) {
+		if (readonly) {
 			blocklock = 1;
 			backing.seekp(blockpos);
 			backing.write(&blocklock, 1);
@@ -50,7 +50,7 @@ namespace FIDB {
 	}
 
 	void Database::_ReleaseLock(uint64_t blockpos, bool readonly) {
-		if (!readonly) {
+		if (readonly) {
 			char blocklock = 0;
 			backing.seekp(blockpos);
 			backing.write(&blocklock, 1);
