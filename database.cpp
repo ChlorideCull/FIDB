@@ -72,7 +72,7 @@ namespace FIDB {
 
 		if (blkhdrs[0] != 0) {
 			Item tomerge = _ReadBlock(blkhdrs[0], blockpos);
-			for (uint64_t i; i < tomerge.itemsize; i++) {
+			for (uint64_t i = 0; i < tomerge.itemsize; i++) {
 				content[contentlen] = tomerge.item[i];
 				contentlen++;
 			}
@@ -88,7 +88,6 @@ namespace FIDB {
 	void Database::_WriteBlock(Item towrite, uint64_t blockpos) {
 		backing.seekg(blockpos);
 		backing.seekp(blockpos);
-		bool newblk;
 		uint64_t blkhdrs[4];
 		if (backing.eof()) {
 			blkhdrs[0] = 0;
@@ -140,7 +139,6 @@ namespace FIDB {
 			cstr - name
 			ulong - byte location of block
 		 */
-		bool notdone = true;
 		uint64_t codepos = sizeof(uint64_t); //Because I'm lazy, and whenever a compiler fucks up the standard
 
 		while (indexblockraw.itemsize < codepos) {
